@@ -1,0 +1,41 @@
+{
+  "name": "HH OAuth helper",
+  "description": "Получить access / refresh токены HeadHunter",
+  "version": "0.1.0",
+
+  "icons": {
+    "16": "icon/16.png",
+    "32": "icon/32.png",
+    "48": "icon/48.png",
+    "96": "icon/96.png",
+    "128": "icon/128.png"
+  },
+
+  "{{chrome}}.manifest_version": 3,
+
+  "{{chrome}}.action": {},
+
+  "{{chrome}}.background": {
+    "service_worker": "src/background.ts",
+    "type": "module"
+  },
+
+  "{{chrome}}.permissions": ["tabs", "webRequest", "storage"],
+
+  "{{chrome}}.host_permissions": ["https://*.hh.ru/*"],
+
+  "{{firefox}}.manifest_version": 2,
+
+  "{{firefox}}.browser_action": {},
+
+  "{{firefox}}.background": {
+    "scripts": ["src/background.ts"]
+  },
+
+  "{{firefox}}.permissions": [
+    "tabs",
+    "webRequest",
+    "storage",
+    "https://*.hh.ru/*"
+  ]
+}
