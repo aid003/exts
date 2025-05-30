@@ -13,23 +13,27 @@
 
   "{{chrome}}.manifest_version": 3,
 
-  "{{chrome}}.action": {},
+  "{{chrome}}.action": {
+    "default_title": "HH OAuth Helper"
+  },
 
   "{{chrome}}.background": {
     "service_worker": "src/background.ts",
     "type": "module"
   },
-
+  
   "{{chrome}}.permissions": ["tabs", "webRequest", "storage"],
-
+  
   "{{chrome}}.host_permissions": ["https://*.hh.ru/*"],
-
+  
   "{{firefox}}.manifest_version": 2,
-
-  "{{firefox}}.browser_action": {},
-
+  
   "{{firefox}}.background": {
     "scripts": ["src/background.ts"]
+  },
+
+  "{{firefox}}.browser_action": {
+    "default_title": "HH OAuth Helper"
   },
 
   "{{firefox}}.permissions": [

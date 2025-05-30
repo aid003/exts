@@ -1,0 +1,52 @@
+.auth-section {
+  margin-bottom: 24px;
+}
+
+.auth-section h2 {
+  font-size: 16px;
+  font-weight: 500;
+  margin: 0 0 12px 0;
+  color: #ccc;
+}
+
+.auth-form {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.token-input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #444;
+  border-radius: 4px;
+  background: #1f1f1f;
+  color: #fff;
+  font-size: 14px;
+}
+
+.token-input:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.token-input:focus {
+  outline: none;
+  border-color: #0064e1;
+}
+
+.auth-form button {
+  flex-shrink: 0;
+  padding: 10px 16px;
+  font-size: 14px;
+  border-radius: 4px;
+  min-width: 120px;
+  max-width: 100%;
+  white-space: nowrap;
+}
+
+.success {
+  color: #4caf50;
+  margin: 0;
+  font-size: 14px;
+} 

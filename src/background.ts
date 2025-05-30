@@ -7,6 +7,47 @@ const CLIENT_SECRET =
   "V9M870DE342BGHFRUJ5FTCGCUA1482AN0DI8C5TFI9ULMA89H10N60NOP8I4JMVS";
 const REDIRECT_URI = "hhandroid://oauthresponse";
 
+let extensionWindowId: number | null = null;
+
+/**
+ * Открываем окно расширения
+ */
+async function openExtensionWindow() {
+  // Если окно уже открыто, фокусируемся на нем
+  if (extensionWindowId !== null) {
+    try {
+      const window = await browser.windows.get(extensionWindowId);
+      if (window) {
+        await browser.windows.update(extensionWindowId, { focused: true });
+        return;
+      }
+    } catch (e) {
+      // Если окно не найдено, сбрасываем ID
+      extensionWindowId = null;
+    }
+  }
+
+  // Создаем новое окно
+  const window = await browser.windows.create({
+    url: browser.runtime.getURL("src/popup.html"),
+    type: "popup",
+    width: 400,
+    height: 600,
+    focused: true
+  });
+
+  if (window.id !== undefined) {
+    extensionWindowId = window.id;
+  }
+
+  // Слушаем закрытие окна
+  browser.windows.onRemoved.addListener((windowId) => {
+    if (windowId === extensionWindowId) {
+      extensionWindowId = null;
+    }
+  });
+}
+
 /**
  * 1. Открываем окно авторизации и ловим 302-редирект с code=…
  */
@@ -39,9 +80,15 @@ async function getAuthCode(): Promise<string> {
       cleanup();
 
       const code = new URL(loc).searchParams.get("code");
-      code ? resolve(code) : reject(new Error("code not found"));
-
-      browser.tabs.remove(tabId).catch(() => void 0);
+      if (code) {
+        // Закрываем вкладку перед resolve
+        browser.tabs.remove(tabId).catch(() => void 0);
+        resolve(code);
+      } else {
+        // Закрываем вкладку перед reject
+        browser.tabs.remove(tabId).catch(() => void 0);
+        reject(new Error("code not found"));
+      }
     };
 
     const onRemoved = (closed: number): void => {
@@ -83,35 +130,39 @@ async function exchangeToken(code: string): Promise<HhTokenResponse> {
 /**
  * 3. Главный слушатель сообщений от UI
  */
-browser.runtime.onMessage.addListener(async () => {
-  try {
-    const code = await getAuthCode();
-    const token = await exchangeToken(code);
+browser.runtime.onMessage.addListener(async (message) => {
+  if (message.cmd === "open") {
+    await openExtensionWindow();
+    return { ok: true };
+  }
 
-    console.log("[hh-oauth] access_token ", token.access_token);
-    console.log("[hh-oauth] refresh_token", token.refresh_token);
-    console.log("[hh-oauth] expires_in", token.expires_in);
+  if (message.cmd === "oauth") {
+    try {
+      const code = await getAuthCode();
+      const token = await exchangeToken(code);
 
-    // проставляем время создания токена
-    const now = Math.floor(Date.now() / 1000);
-    const fullTok = { ...token, created_at: now };
+      console.log("[hh-oauth] access_token ", token.access_token);
+      console.log("[hh-oauth] refresh_token", token.refresh_token);
+      console.log("[hh-oauth] expires_in", token.expires_in);
 
-    // сохраняем весь объект в storage.local
-    await browser.storage.local.set({ hhToken: fullTok });
+      // проставляем время создания токена
+      const now = Math.floor(Date.now() / 1000);
+      const fullTok = { ...token, created_at: now };
 
-    return { ok: true, token: fullTok };
-  } catch (e) {
-    console.error("[hh-oauth] error", e);
-    return { ok: false, error: String(e) };
+      // сохраняем весь объект в storage.local
+      await browser.storage.local.set({ hhToken: fullTok });
+
+      return { ok: true, token: fullTok };
+    } catch (e) {
+      console.error("[hh-oauth] error", e);
+      return { ok: false, error: String(e) };
+    }
   }
 });
 
-/**
- * 4. Открываем UI в новой вкладке при клике по иконке
- */
+// Обработчик клика по иконке расширения
 browser.action.onClicked.addListener(() => {
-  const url = browser.runtime.getURL("src/popup.html");
-  browser.tabs.create({ url });
+  openExtensionWindow();
 });
 
 console.log("HH OAuth background ready");
