@@ -58,20 +58,21 @@ export default function SystemAuth({ onAuthSuccess }: SystemAuthProps): JSX.Elem
   return (
     <div className="auth-section">
       <h2>Шаг 1: Авторизация в системе</h2>
+      <p>Получить токен авторизации можно <a href="https://t.me/milliondollarontags_bot" target="_blank" rel="noopener noreferrer">тут</a></p>
       <div className="auth-form">
         <input
           type="text"
           value={tokenInput}
           onChange={(e) => setTokenInput(e.target.value)}
-          placeholder="Введите токен авторизации"
+          placeholder="Введите токен авторизации из tg"
           disabled={state.status === "loading"}
           className="token-input"
         />
         <button 
           onClick={handleAuth} 
-          disabled={state.status === "loading"}
+          disabled={state.status === "loading" || !tokenInput.trim()}
         >
-          {state.status === "idle" ? "Войти в систему" : "Авторизация..."}
+          {state.status === "loading" ? "Авторизация..." : "Войти в систему"}
         </button>
       </div>
       {state.status === "error" && (

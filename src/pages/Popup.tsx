@@ -2,47 +2,92 @@ import { useEffect, useState } from "react";
 import browser from "webextension-polyfill";
 import type { HhTokenResponse } from "../types";
 import SystemAuth from "./Auth/SystemAuth";
+import HhAuth from "./Auth/HhAuth";
+import TokenDisplay from "./Display/TokenDisplay";
 import "./Popup.css";
-
-type HhAuthState =
-  | { status: "idle" }
-  | { status: "loading" }
-  | { status: "done"; token: HhTokenResponse }
-  | { status: "error"; message: string };
 
 export default function Popup(): JSX.Element {
   const [isSystemAuthenticated, setIsSystemAuthenticated] = useState(false);
-  const [hhAuth, setHhAuth] = useState<HhAuthState>({ status: "idle" });
+  const [hhToken, setHhToken] = useState<HhTokenResponse | null>(null);
+  const [showTokenDisplay, setShowTokenDisplay] = useState(false);
 
-  // При монтировании проверяем системную авторизацию и токен HH
   useEffect(() => {
-    // Проверяем системную авторизацию
-    browser.storage.local.get("systemAuth").then((res) => {
+    console.log("[Popup] Component mounted");
+    
+    // Загружаем все состояния из storage при монтировании
+    browser.storage.local.get(["systemAuth", "hhToken", "showTokenDisplay"]).then((res) => {
+      console.log("[Popup] Initial storage state:", res);
       if (res.systemAuth) {
         setIsSystemAuthenticated(true);
       }
-    });
-
-    // Проверяем токен HH
-    browser.storage.local.get("hhToken").then((res) => {
       if (res.hhToken) {
-        setHhAuth({ status: "done", token: res.hhToken as HhTokenResponse });
+        setHhToken(res.hhToken as HhTokenResponse);
+      }
+      if (res.showTokenDisplay) {
+        setShowTokenDisplay(true);
       }
     });
+
+    // Слушаем изменения в storage
+    const handleStorageChange = (changes: { [key: string]: browser.Storage.StorageChange }) => {
+      console.log("[Popup] Storage changes:", changes);
+      
+      if ('systemAuth' in changes) {
+        const newValue = changes.systemAuth?.newValue;
+        console.log("[Popup] Setting systemAuth to:", newValue);
+        setIsSystemAuthenticated(!!newValue);
+      }
+      if (changes.hhToken?.newValue === undefined) {
+        setHhToken(null);
+      }
+      if ('showTokenDisplay' in changes) {
+        const newValue = changes.showTokenDisplay?.newValue;
+        console.log("[Popup] Setting showTokenDisplay to:", newValue);
+        setShowTokenDisplay(!!newValue);
+      }
+    };
+
+    browser.storage.onChanged.addListener(handleStorageChange);
+
+    return () => {
+      console.log("[Popup] Component unmounting");
+      browser.storage.onChanged.removeListener(handleStorageChange);
+    };
   }, []);
 
-  const handleHhAuth = async (): Promise<void> => {
-    setHhAuth({ status: "loading" });
-    const resp = (await browser.runtime.sendMessage({ cmd: "oauth" })) as
-      | { ok: true; token: HhTokenResponse }
-      | { ok: false; error: string };
-
-    if (resp.ok) {
-      setHhAuth({ status: "done", token: resp.token });
-    } else {
-      setHhAuth({ status: "error", message: resp.error });
-    }
+  const handleHhAuthSuccess = async (token: HhTokenResponse) => {
+    console.log("[Popup] HH Auth success with token:", token);
+    
+    // Сначала сохраняем в storage
+    await browser.storage.local.set({ 
+      hhToken: token,
+      showTokenDisplay: true 
+    });
+    
+    // Затем обновляем состояние
+    setHhToken(token);
+    setShowTokenDisplay(true);
   };
+
+  const handleGetNewTokens = async () => {
+    console.log("[Popup] Getting new tokens");
+    
+    // Сначала сохраняем в storage
+    await browser.storage.local.set({ 
+      showTokenDisplay: false,
+      hhToken: null 
+    });
+    
+    // Затем обновляем состояние
+    setShowTokenDisplay(false);
+    setHhToken(null);
+  };
+
+  console.log("[Popup] Rendering with state:", { 
+    isSystemAuthenticated, 
+    hhToken: hhToken ? 'exists' : 'null', 
+    showTokenDisplay 
+  });
 
   return (
     <div className="page">
@@ -50,41 +95,13 @@ export default function Popup(): JSX.Element {
       
       {!isSystemAuthenticated ? (
         <SystemAuth onAuthSuccess={() => setIsSystemAuthenticated(true)} />
+      ) : showTokenDisplay && hhToken ? (
+        <TokenDisplay 
+          token={hhToken}
+          onContinue={handleGetNewTokens}
+        />
       ) : (
-        <div className="auth-section">
-          <h2>Шаг 2: Авторизация в HH</h2>
-          <button 
-            onClick={handleHhAuth} 
-            disabled={hhAuth.status === "loading"}
-          >
-            {hhAuth.status === "done" ? "Обновить токены HH" : "Получить токены HH"}
-          </button>
-
-          {hhAuth.status === "loading" && <p>Ожидание авторизации в HH…</p>}
-          {hhAuth.status === "error" && (
-            <p className="error">Ошибка: {hhAuth.message}</p>
-          )}
-          {hhAuth.status === "done" && (
-            <div className="tokens">
-              <p>
-                <strong>Access Token:</strong> {hhAuth.token.access_token}
-              </p>
-              <p>
-                <strong>Refresh Token:</strong> {hhAuth.token.refresh_token}
-              </p>
-              <p>
-                <strong>Expires In:</strong> {hhAuth.token.expires_in}
-              </p>
-              <p>
-                <strong>Created At:</strong>{" "}
-                {new Date(hhAuth.token.created_at * 1000).toLocaleString()}
-              </p>
-              <p>
-                <strong>Token Type:</strong> {hhAuth.token.token_type}
-              </p>
-            </div>
-          )}
-        </div>
+        <HhAuth onAuthSuccess={handleHhAuthSuccess} />
       )}
     </div>
   );

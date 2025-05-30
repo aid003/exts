@@ -1,0 +1,90 @@
+.auth-section {
+  margin-bottom: 1.5rem;
+  width: 100%;
+  max-width: 30rem;
+}
+
+.auth-section h2 {
+  font-size: 1.2rem;
+  font-weight: 500;
+  margin: 0 0 0.75rem 0;
+  color: #ccc;
+  text-align: center;
+}
+
+.auth-section button {
+  display: block;
+  margin: 0 auto;
+  min-width: 10rem;
+}
+
+.auth-section p {
+  text-align: center;
+  margin: 0.75rem 0;
+  font-size: 0.875rem;
+}
+
+.tokens {
+  background: #1f1f1f;
+  border-radius: 0.25rem;
+  padding: 0.75rem;
+  max-height: 12.5rem;
+  overflow-y: auto;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  margin-top: 1rem;
+}
+
+.tokens p {
+  margin: 0.5rem 0;
+  word-break: break-all;
+  text-align: left;
+}
+
+.tokens p + p {
+  margin-top: 0.5rem;
+}
+
+.tokens strong {
+  display: inline-block;
+  min-width: 7rem;
+  color: #ccc;
+}
+
+.tokens {
+  scrollbar-width: thin;
+  scrollbar-color: #555 #2e2e2e;
+}
+
+.tokens::-webkit-scrollbar {
+  width: 0.375rem;
+}
+
+.tokens::-webkit-scrollbar-thumb {
+  background-color: #555;
+  border-radius: 0.1875rem;
+}
+
+.tokens::-webkit-scrollbar-track {
+  background: #2e2e2e;
+}
+
+.error {
+  color: #ff4444;
+}
+
+.continue-button {
+  display: block;
+  margin: 1rem auto 0;
+  padding: 0.625rem 1rem;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.continue-button:hover {
+  background-color: #45a049;
+} 

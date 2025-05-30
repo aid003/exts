@@ -1,0 +1,73 @@
+.token-display {
+  width: 100%;
+  max-width: 30rem;
+  margin: 1rem auto;
+}
+
+.success-message {
+  color: #4caf50;
+  text-align: center;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+}
+
+.tokens-container {
+  background: #1f1f1f;
+  border-radius: 0.25rem;
+  padding: 0.75rem;
+  max-height: 12.5rem;
+  overflow-y: auto;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.tokens-container p {
+  margin: 0.5rem 0;
+  word-break: break-all;
+  text-align: left;
+}
+
+.tokens-container p + p {
+  margin-top: 0.5rem;
+}
+
+.tokens-container strong {
+  display: inline-block;
+  min-width: 7rem;
+  color: #ccc;
+}
+
+.tokens-container {
+  scrollbar-width: thin;
+  scrollbar-color: #555 #2e2e2e;
+}
+
+.tokens-container::-webkit-scrollbar {
+  width: 0.375rem;
+}
+
+.tokens-container::-webkit-scrollbar-thumb {
+  background-color: #555;
+  border-radius: 0.1875rem;
+}
+
+.tokens-container::-webkit-scrollbar-track {
+  background: #2e2e2e;
+}
+
+.continue-button {
+  display: block;
+  margin: 1rem auto 0;
+  padding: 0.625rem 1rem;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  min-width: 10rem;
+}
+
+.continue-button:hover {
+  background-color: #45a049;
+} 

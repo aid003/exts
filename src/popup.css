@@ -1,3 +1,5 @@
+@import "normalize.css";
+
 html,
 body {
   width: 100%;
@@ -26,15 +28,19 @@ body {
 @media (max-width: 400px) {
   html,
   body {
-    width: 300px;
-    height: 400px;
+    width: 100vw;
+    height: 100vh;
+    box-sizing: border-box;
   }
 
   #root {
-    width: 360px;
-    max-width: 100%;
+    width: 100vw;
+    height: 100vh;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
     overflow: hidden;
   }
 }
